@@ -9,6 +9,26 @@ class LinkedList {
   __head = null;
   __numItems = 0;
 
+  __createNode(item, next) {
+    this.__numItems += 1;
+    return new Node(item, next);
+  }
+
+  __getByIndex(index) {
+    if (index > this.__numItems - 1) {
+      throw new Error("getByIndex __ error");
+    }
+
+    let currentIndex = 0;
+    let currentNode = this.__head;
+    while (currentIndex !== index) {
+      currentNode = currentNode.next;
+      currentIndex++;
+    }
+
+    return currentNode;
+  }
+
   // item 을 연결 리스트의 index번 원소로 삽입
   insert(index, item) {
     if (index > this.__numItems - 1) {
@@ -20,36 +40,27 @@ class LinkedList {
     if (index === 0) {
       // head 가 없으면
       if (!this.__head) {
-        this.__head = new Node(item, null);
-        this.__numItems += 1;
+        this.__head = this.__createNode(item, null);
         return;
       }
 
-      this.__head = new Node(item, this.__head);
-      this.__numItems += 1;
+      this.__head = this.__createNode(item, this.__head);
       return;
     }
 
-    let currentIndex = 0;
-    let currentNode = this.__head;
-    while (currentIndex !== index - 1) {
-      currentNode = currentNode.next;
-      currentIndex++;
-    }
+    let nodeBeforeNodeAtIndex = this.__getByIndex(index - 1);
 
-    const tempNodeAtIndex = currentNode.next;
+    const tempNodeAtIndex = nodeBeforeNodeAtIndex.next;
 
     // 마지막 노드는 신경쓰지 않아도 된다. why? 어짭히 next는 null 값이기 때문에
-    currentNode.next = new Node(item, tempNodeAtIndex.next);
-    this.__numItems += 1;
+    nodeBeforeNodeAtIndex.next = this.__createNode(item, tempNodeAtIndex.next);
   }
 
   // item 을 연결 리스트의 맨 뒤에 item 을 삽입
   append(item) {
     // head 가 없으면 head 에 Node 를 추가하고 리턴한다.
     if (!this.__head) {
-      this.__head = new Node(item, null);
-      this.__numItems += 1;
+      this.__head = this.__createNode(item, null);
       return;
     }
 
@@ -60,27 +71,78 @@ class LinkedList {
     }
 
     // 위에서 찾은 마지막 노드의 next에 파라메터로 전달받은 item으로 마지막 노드를 생성하여 연결한다.
-    node.next = new Node(item, null);
-    this.__numItems += 1;
+    node.next = this.__createNode(item, null);
   }
 
   // 연결 리스트의 index번 원소를 삭제하면서 삭제된 값을 반환
-  pop(index) {}
+  pop(index) {
+    if (index > this.__numItems - 1) {
+      console.log("pop__error -> 인덱스가 원소의 갯수 보다 큽니다.!");
+      return;
+    }
+
+    if (index === 0) {
+      this.__head = this.__head.next;
+      this.__numItems -= 1;
+      return;
+    }
+
+    let nodeBeforeNodeAtIndex = this.__getByIndex(index - 1);
+
+    nodeBeforeNodeAtIndex.next = nodeBeforeNodeAtIndex.next?.next ?? null;
+    this.__numItems -= 1;
+  }
 
   // 연결 리스트에서 (처음으로 나타나는) x를 삭제한다.
-  remove(item) {}
+  remove(item) {
+    if (!this.__head) {
+      throw new Error("리스트에 원소가 없습니다.");
+    }
+
+    if (this.__head.item === item) {
+      if (!this.__head.next) {
+        this.__head = null;
+        this.__numItems -= 1;
+        return;
+      }
+
+      this.__head = this.__head.next;
+      this.__numItems -= 1;
+      return;
+    }
+
+    let nodeBeforeItemNode = this.__head;
+    while (item !== nodeBeforeItemNode.next?.item) {
+      if (!nodeBeforeItemNode.next) {
+        throw new Error(`${item}을 찾지 못하였습니다.`);
+      }
+      nodeBeforeItemNode = nodeBeforeItemNode.next;
+    }
+
+    nodeBeforeItemNode.next = nodeBeforeItemNode.next?.next ?? null;
+    this.__numItems -= 1;
+  }
 
   // 연결 리스트의 i번 원소를 반환
-  get(index) {}
+  get(index) {
+    return this.__getByIndex(index);
+  }
 
   // 연결 리스트가 빈 리스트인지 boolean 값으로 반환
-  isEmpty() {}
+  isEmpty() {
+    return !this.__head;
+  }
 
   // 연결 리스트의 총 원소 수를 반환
-  size() {}
+  size() {
+    return this.__numItems;
+  }
 
   // 연결 리스트를 청소
-  clear() {}
+  clear() {
+    this.__head = null;
+    this.__numItems = 0;
+  }
 
   //연결 리스트에서 원소 item이 몇 번 나타나는지 알려준다.
   count(item) {}
@@ -104,5 +166,9 @@ linkedList.append(1);
 linkedList.append(5);
 linkedList.append(10);
 linkedList.insert(0, 0.3);
+linkedList.remove(1);
+linkedList.remove(5);
+linkedList.remove(10);
+linkedList.remove(0.3);
 
 console.log(linkedList);
